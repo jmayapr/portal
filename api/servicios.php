@@ -25,9 +25,23 @@ $app->post('/getCafeteria', function (Request $request) use ($app) {
 	
     $post = $app['db']->fetchAll($sql , array ((int) $user) );
     
-    return  json_encode($post);
+    return  new response (json_encode($post) , 201);
 });
 
+$app->post('/getCafeteriaTotal', function (Request $request) use ($app) {
+    $user     = $request->get('empid');
+    
+    $sql = "select concat('$' , format (sum(precio*qty) , 2))  as foo from productos, orden where orden.proid = productos.sku and fecha between (select desde from  chronos) and   (select hasta from chronos) and orden.empid = ? order by fecha ";
+    
+    $post = $app['db']->fetchAll($sql , array ((int) $user) );
+
+    if($post[0]['foo'] != null)
+        return new response (json_encode($post) , 201);
+    else
+        return new response (json_encode($post) , 404);
+    
+
+});
 
 $app->run();
 
